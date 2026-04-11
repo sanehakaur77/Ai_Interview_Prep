@@ -1,0 +1,120 @@
+import React from "react";
+import { Zap } from "lucide-react";
+
+const Features = () => {
+  const [isHover, setIsHover] = React.useState(false);
+
+  return (
+    <>
+      {/* Badge */}
+      <div
+        id="features"
+        className="flex flex-col items-center my-10 scroll-mt-12"
+      >
+        <div className="flex items-center gap-2 text-sm text-green-800 bg-green-400/10 border border-green-200 rounded-full px-4 py-1">
+          <Zap className="text-green-400" size={20} />
+          <span>Responded to 99% applicants</span>
+        </div>
+      </div>
+
+      {/* Main Section */}
+      <div className="flex flex-col lg:flex-row items-center gap-10 px-4 lg:px-16">
+        {/* Image */}
+        <img
+          className="w-full max-w-xl lg:max-w-2xl"
+          src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/features/group-image-1.png"
+          alt="Features"
+        />
+
+        {/* Feature Cards */}
+        <div
+          className="flex flex-col gap-2"
+          onMouseEnter={() => setIsHover(true)}
+          onMouseLeave={() => setIsHover(false)}
+        >
+          {/* Card 1 */}
+          <div className="max-w-md group cursor-pointer">
+            <div
+              className={`p-6 flex gap-4 rounded-xl border transition-colors
+              ${
+                !isHover
+                  ? "border-violet-300 bg-violet-100"
+                  : "border-transparent group-hover:bg-violet-100 group-hover:border-violet-300"
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="size-6 stroke-violet-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-slate-700">
+                  Real-Time Analytics
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Get instant insights into your finances with live dashboards.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="max-w-md group cursor-pointer">
+            <div className="p-6 flex gap-4 rounded-xl border border-transparent transition-colors group-hover:bg-green-100 group-hover:border-green-300">
+              <svg
+                className="size-6 stroke-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-slate-700">
+                  Resume Based Interview
+                </h3>
+                <p className="text-sm text-slate-600">
+                  End-to-end encryption and 2FA protection.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="max-w-md group cursor-pointer">
+            <div className="p-6 flex gap-2 rounded-xl border border-transparent transition-colors group-hover:bg-orange-100 group-hover:border-orange-300">
+              <svg
+                className="size-6 stroke-orange-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 15V3" />
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-slate-700">
+                  Customizable Reports
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Export audit-ready financial reports easily.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Features;
