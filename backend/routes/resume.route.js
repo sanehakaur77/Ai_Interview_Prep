@@ -16,28 +16,23 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // ✅ Upload to Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path, {
       resource_type: "raw",
     });
     console.log("2. Uploaded to Cloudinary");
 
-    // ✅ Extract text
     const text = await extractTextFromPDF(req.file.path);
     console.log("3. Extracted text length:", text.length);
 
-    // ✅ Generate questions
     const data = await generateQuestions(text);
     console.log("4. Gemini response received");
 
-    // ✅ Delete local file
     fs.unlinkSync(req.file.path);
 
-    // ✅ Final response
     res.json({
       message: "PDF uploaded & processed successfully ✅",
       url: result.secure_url,
-      questions: data.questions,
+      questions: data,
     });
   } catch (err) {
     console.log("ERROR:", err);

@@ -136,57 +136,62 @@ const Hero = () => {
     <>
       <div className="min-h-screen pb-20">
         {/* Navbar */}
-        <nav className="z-50 flex items-center justify-between w-full py-4 px-6 md:px-16 lg:px-24 xl:px-40 text-sm">
-          <a href="https://prebuiltui.com">
-            <img src="logo.svg" alt="" />
+        <nav className="z-50 flex items-center justify-between w-full py-4 px-6 md:px-16 lg:px-24 xl:px-40 text-sm bg-white">
+          {/* LOGO */}
+          <a href="/" className="flex items-center">
+            <img
+              src="/logo.png" // 👈 make sure this is in public folder
+              alt="logo"
+              className="w-46 md:w-32 object-contain transition-transform duration-300 hover:scale-105"
+            />
           </a>
 
-          <div className="hidden md:flex items-center gap-8 transition duration-500 text-slate-800">
-            <Link to="/" className="hover:text-green-600 transition">
+          {/* NAV LINKS */}
+          <div className="hidden md:flex items-center gap-8 text-slate-800">
+            <Link to="/" className="hover:text-emerald-600 transition">
               Home
             </Link>
-            <Link href="#features" className="hover:text-green-600 transition">
+            <a href="#features" className="hover:text-emerald-600 transition">
               Features
-            </Link>
-            <Link
+            </a>
+            <a
               href="#testimonials"
-              className="hover:text-green-600 transition"
+              className="hover:text-emerald-600 transition"
             >
               Testimonials
-            </Link>
-            <Link href="#cta" className="hover:text-green-600 transition">
+            </a>
+            <a href="#cta" className="hover:text-emerald-600 transition">
               Contact
-            </Link>
+            </a>
           </div>
 
+          {/* RIGHT SIDE */}
           {!token ? (
             <div className="flex gap-2">
               <Link
                 to="/app?state=register"
-                className="hidden md:block px-6 py-2 bg-green-500 hover:bg-green-700 active:scale-95 transition-all rounded-full text-white"
+                className="hidden md:block px-6 py-2 bg-emerald-500 hover:bg-emerald-700 active:scale-95 transition-all rounded-full text-white"
               >
                 Get Started
               </Link>
             </div>
           ) : (
             <div className="relative">
-              {/* Profile Button */}
+              {/* PROFILE BUTTON */}
               <button
                 className="w-8 h-8 rounded-full bg-emerald-400 text-white text-sm flex items-center justify-center hover:bg-emerald-300 hover:scale-110 transition"
-                onClick={() => setMenuOpen(!menuOpen)} // ✅ toggle
+                onClick={() => setMenuOpen(!menuOpen)}
               >
                 {username?.split(" ")[0]?.charAt(0).toUpperCase()}
               </button>
 
-              {/* Dropdown Menu */}
+              {/* DROPDOWN */}
               {menuOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg p-2 z-50">
-                  {/* Username */}
                   <p className="px-3 py-2 text-gray-700 font-semibold border-b">
                     {username}
                   </p>
 
-                  {/* Logout */}
                   <button
                     onClick={() => {
                       localStorage.removeItem("token");
@@ -201,6 +206,7 @@ const Hero = () => {
             </div>
           )}
 
+          {/* MOBILE MENU BUTTON */}
           <button
             onClick={() => setMenuOpen(true)}
             className="md:hidden active:scale-90 transition"
@@ -212,7 +218,6 @@ const Hero = () => {
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="lucide lucide-menu"
             >
               <path d="M4 5h16M4 12h16M4 19h16" />
             </svg>

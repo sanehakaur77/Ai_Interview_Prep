@@ -18,7 +18,7 @@ export default function StartInterviewForm() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-2">
       <div className="flex flex-col md:flex-row w-full max-w-3xl bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
         {/* Left Side */}
-        <div className="md:w-1/2 bg-emerald-400 p-6 flex flex-col justify-center">
+        <div className="md:w-1/2 bg-emerald-300 p-6 flex flex-col justify-center">
           <h1 className="text-2xl font-bold text-[#1a2e35] mb-3">
             Start Your AI Interview
           </h1>

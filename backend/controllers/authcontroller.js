@@ -63,6 +63,7 @@ exports.login = async (req, res) => {
       name: user.name,
       email: user.email,
       token: generateToken(user._id),
+      success: true,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -82,7 +83,7 @@ exports.getProfile = async (req, res) => {
     const token = authHeader.split(" ")[1];
 
     // 3. Verify token
-    const decoded = jwt.verify(token, "saneha123");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id);
     // 4. Send username
     res.status(200).json({

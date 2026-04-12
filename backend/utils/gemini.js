@@ -6,33 +6,25 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.5-flash-lite",
 });
-
-// 🧠 SMALL RESUME CLEANER (TOKEN SAVER)
-const cleanText = (text) => {
-  return text.replace(/\n/g, " ").replace(/\s+/g, " ").slice(0, 1500); // 🔥 BIG TOKEN SAVING
-};
-
-// 🎯 1. QUESTIONS (LOW TOKEN PROMPT)
 const generateQuestions = async (resumeText) => {
   const prompt = `
-Make 2 interview questions.
+30 interview questions from resume:
+15 technical, 10 project, 5 HR.
 
-Return JSON:
-{"q":[{"t":"","q":""}]}
+JSON only:
+{"questions":[{"type":"","question":""}]}
 
-Resume:
-${cleanText(resumeText)}
+${resumeText}
 `;
 
-  const result = await model.generateContent(prompt);
-  let text = result.response.text();
-
-  text = text.replace(/```json|```/g, "").trim();
-
+  const text = (await (await model.generateContent(prompt)).response).text();
   return JSON.parse(text);
 };
 
-// 🎯 2. FEEDBACK (LOW TOKEN PROMPT)
+const cleanText = (text) => {
+  return text.replace(/\n/g, " ").replace(/\s+/g, " ").slice(0, 1500);
+};
+
 const generateFinalFeedback = async (questions, answers) => {
   const prompt = `
 Rate interview.

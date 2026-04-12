@@ -24,9 +24,15 @@ export default function Footer() {
             {/* LOGO */}
             <div className="min-w-[150px]">
               <a href="/">
-                <h1 className="text-xl font-semibold text-emerald-600">
-                  YourBrand
-                </h1>
+                <div className="min-w-[150px]">
+                  <a href="/">
+                    <img
+                      src="/logo.png"
+                      alt="logo"
+                      className="w-28 object-contain"
+                    />
+                  </a>
+                </div>
               </a>
             </div>
 
@@ -139,12 +145,6 @@ export default function Footer() {
                   <FontAwesomeIcon icon={icon} size="lg" />
                 </a>
               ))}
-            </div>
-
-            {/* COPYRIGHT */}
-            <div className="mt-2 text-[13px] text-gray-400">
-              © 2026{" "}
-              <span className="text-emerald-600 font-medium">YourBrand</span>
             </div>
           </div>
         </div>
