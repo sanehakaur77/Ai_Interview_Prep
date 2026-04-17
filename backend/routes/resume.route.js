@@ -3,10 +3,11 @@ const multer = require("multer");
 const fs = require("fs");
 const cloudinary = require("../configs/cloudinary");
 const { extractTextFromPDF } = require("../utils/pdf");
-const { generateQuestions, generateFinalFeedback } = require("../utils/gemini");
-
+const { generateQuestions, evaluateInterview } = require("../utils/gemini");
+const ResumeInterview = require("../models/resumeInterview");
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
+const { authMiddleware } = require("../middlewares/auth.middleware");
 
 router.post("/upload", upload.single("resume"), async (req, res) => {
   try {
@@ -18,8 +19,10 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
 
     const result = await cloudinary.uploader.upload(req.file.path, {
       resource_type: "raw",
+      type: "upload",
     });
-    console.log("2. Uploaded to Cloudinary");
+
+    console.log("2. Uploaded to Cloudinary:", result.secure_url);
 
     const text = await extractTextFromPDF(req.file.path);
     console.log("3. Extracted text length:", text.length);
@@ -30,14 +33,14 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
     fs.unlinkSync(req.file.path);
 
     res.json({
-      message: "PDF uploaded & processed successfully ✅",
+      message: "PDF uploaded & processed successfully",
       url: result.secure_url,
       questions: data,
     });
   } catch (err) {
     console.log("ERROR:", err);
 
-    // delete file if error
+    // cleanup if error
     if (req.file) {
       try {
         fs.unlinkSync(req.file.path);
@@ -47,25 +50,78 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-//  providing the feedback
-router.post("/provide-feedback", async (req, res) => {
+router.post("/save-response", authMiddleware, async (req, res) => {
   try {
-    const { questions, answers } = req.body;
+    let { questions, answers } = req.body;
 
-    if (!questions || !answers) {
-      return res.status(400).json({ error: "Questions and answers required" });
+    console.log("BODY:", req.body);
+    console.log("USER:", req.user);
+
+    if (!Array.isArray(questions) || !Array.isArray(answers)) {
+      return res.status(400).json({ message: "Invalid arrays" });
     }
 
-    const feedback = await generateFinalFeedback(questions, answers);
+    const formattedQuestions = questions.map((q) => ({
+      question: typeof q === "string" ? q : q.question,
+    }));
 
-    res.json({
-      message: "Final feedback generated",
-      feedback,
+    const interview = await ResumeInterview.create({
+      userId: req.user.id,
+      questions: formattedQuestions,
+      answers,
+      status: "completed",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Interview saved successfully",
+      interview,
     });
   } catch (err) {
-    console.log("ERROR:", err);
-    res.status(500).json({ error: err.message });
+    console.log("SAVE ERROR:", err);
+    return res.status(500).json({
+      message: err.message,
+    });
   }
 });
+//  resume evaluate rouet
+router.post("/evaluate", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.id;
 
+    // 1. Find latest interview of user
+    const interview = await ResumeInterview.findOne({ userId }).sort({
+      createdAt: -1,
+    });
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: "No interview found for this user",
+      });
+    }
+
+    // 2. Build QA data
+    const qaData = interview.questions.map((q, i) => ({
+      question: q.question,
+      answer: interview.answers[i] || "",
+    }));
+
+    // 3. Send to Gemini
+    const result = await evaluateInterview(qaData);
+
+    // 4. Save evaluation in DB
+    interview.evaluation = result;
+    await interview.save();
+
+    // 5. Return response
+    res.json({
+      success: true,
+      evaluation: result,
+    });
+  } catch (err) {
+    console.log("EVALUATE ERROR:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
 module.exports = router;

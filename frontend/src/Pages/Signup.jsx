@@ -3,26 +3,30 @@ import { Eye, EyeOff, ArrowRight, User, Mail } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
 import axios from "axios";
-
+import { Toaster, toast } from "react-hot-toast";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ state
+  // state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
 
-  // ✅ handle change
+  // handle change
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
+  //  for navigation
+  const navigate = useNavigate();
 
-  // ✅ submit
+  //  submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -31,20 +35,18 @@ const Signup = () => {
         "http://localhost:8989/api/auth/signup",
         formData,
       );
+      toast.success("Sign Up Sucessful!");
+      if (res.data.success) {
+        navigate("/login");
+      }
 
-      console.log("Signup Success:", res.data);
-
-      alert("Signup Successful ✅");
-
-      // optional: reset form
       setFormData({
         name: "",
         email: "",
         password: "",
       });
     } catch (error) {
-      console.log(error.response?.data || error.message);
-      alert(error.response?.data?.message || "Error");
+      toast.error(Object.values(error.response.data.errors).join(", "));
     }
   };
 
@@ -57,7 +59,7 @@ const Signup = () => {
           </h1>
         </div>
 
-        {/* ✅ FORM CONNECTED */}
+        {/*  FORM CONNECTED */}
         <form className="space-y-3" onSubmit={handleSubmit}>
           <div className="flex items-center border border-slate-200 rounded-md px-2 focus-within:ring-1 focus-within:ring-blue-400">
             <User size={14} className="text-slate-400" />
@@ -131,7 +133,7 @@ const Signup = () => {
         <p className="text-[10px] text-center text-slate-500 mt-4">
           Already have an account?{" "}
           <span className="text-blue-600 cursor-pointer font-medium hover:underline">
-            Log in
+            <Link to="/login">Login</Link>
           </span>
         </p>
       </div>

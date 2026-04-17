@@ -5,6 +5,7 @@ import { faGoogle, faGithub } from "@fortawesome/free-brands-svg-icons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
+import { Link } from "react-router-dom";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const Login = () => {
         toast.error("Invalid credentials");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
+      toast.error(res.data.errors?.[0]?.message || "Login failed");
     }
   };
 
@@ -128,7 +129,7 @@ const Login = () => {
           <p className="text-[10px] text-center text-slate-500 mt-4">
             Don’t have an account?{" "}
             <span className="text-blue-600 cursor-pointer font-medium hover:underline">
-              Sign up
+              <Link to="/signup">Sign up</Link>
             </span>
           </p>
         </div>

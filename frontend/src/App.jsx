@@ -5,6 +5,7 @@ import Login from "./Pages/Login";
 import StartInterviewForm from "./Pages/StartInterviewForm";
 import ResumeInterview from "./Pages/ResumeInterview";
 import { Toaster } from "react-hot-toast";
+import Evaluate from "./Pages/Evaluate";
 const App = () => {
   const isAuthorized = Boolean(localStorage.getItem("token"));
   return (
@@ -16,7 +17,7 @@ const App = () => {
         <Route path="/login" element={<Login />}></Route>
         <Route path="/start-interview" element={<StartInterviewForm />}></Route>
         <Route path="/interview" element={<ResumeInterview />} />
-        <Route />
+        <Route path="/evaluate" element={<Evaluate />} />
       </Routes>
     </>
   );

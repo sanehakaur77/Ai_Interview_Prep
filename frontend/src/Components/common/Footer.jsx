@@ -17,22 +17,17 @@ export default function Footer() {
       `}</style>
 
       <footer className="footer-container w-full bg-white border-t py-14 px-6 md:px-16 lg:px-24">
-        {/* INNER WRAPPER - Centered and constrained */}
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between gap-12">
-          {/* LEFT SECTION - Links Group */}
+          {/* LEFT SECTION */}
           <div className="flex flex-wrap gap-10 md:gap-[60px] xl:gap-[120px] flex-1">
-            {/* LOGO */}
+            {/* LOGO (FIXED - NO NESTED A TAG) */}
             <div className="min-w-[150px]">
               <a href="/">
-                <div className="min-w-[150px]">
-                  <a href="/">
-                    <img
-                      src="/logo.png"
-                      alt="logo"
-                      className="w-28 object-contain"
-                    />
-                  </a>
-                </div>
+                <img
+                  src="/logo.png"
+                  alt="logo"
+                  className="w-28 object-contain"
+                />
               </a>
             </div>
 
@@ -58,45 +53,33 @@ export default function Footer() {
               <p className="text-gray-900 font-semibold mb-4">Resources</p>
               <ul className="space-y-2 text-[13px] text-gray-600">
                 <li>
-                  <a
-                    href="/"
-                    className="hover:text-emerald-600 transition-colors"
-                  >
+                  <a href="/" className="hover:text-emerald-600">
                     Company
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/"
-                    className="hover:text-emerald-600 transition-colors"
-                  >
+                  <a href="/" className="hover:text-emerald-600">
                     Blogs
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/"
-                    className="hover:text-emerald-600 transition-colors"
-                  >
+                  <a href="/" className="hover:text-emerald-600">
                     Community
                   </a>
                 </li>
                 <li>
                   <a
                     href="/"
-                    className="hover:text-emerald-600 transition-colors inline-flex items-center"
+                    className="hover:text-emerald-600 inline-flex items-center"
                   >
                     Careers
-                    <span className="text-[10px] text-white bg-emerald-500 rounded ml-2 px-2 py-0.5 font-medium">
+                    <span className="text-[10px] text-white bg-emerald-500 rounded ml-2 px-2 py-0.5">
                       Hiring
                     </span>
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/"
-                    className="hover:text-emerald-600 transition-colors"
-                  >
+                  <a href="/" className="hover:text-emerald-600">
                     About
                   </a>
                 </li>
@@ -108,18 +91,12 @@ export default function Footer() {
               <p className="text-gray-900 font-semibold mb-4">Legal</p>
               <ul className="space-y-2 text-[13px] text-gray-600">
                 <li>
-                  <a
-                    href="/"
-                    className="hover:text-emerald-600 transition-colors"
-                  >
+                  <a href="/" className="hover:text-emerald-600">
                     Privacy
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/"
-                    className="hover:text-emerald-600 transition-colors"
-                  >
+                  <a href="/" className="hover:text-emerald-600">
                     Terms
                   </a>
                 </li>
@@ -127,7 +104,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* RIGHT SECTION - Info & Socials */}
+          {/* RIGHT SECTION */}
           <div className="flex flex-col items-start lg:items-end text-left lg:text-right gap-4 lg:min-w-[300px]">
             <p className="max-w-xs text-gray-500 text-[13px] leading-relaxed">
               Making every customer feel valued—no matter the size of your
