@@ -14,8 +14,10 @@ app.use(express.json());
 //  routes
 const authRoutes = require("./routes/authroutes");
 const resumeRoutes = require("./routes/resume.route");
+const sessionRoutes = require("./routes/session.routes");
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/session", sessionRoutes);
 
 // DB Connection
 mongoose

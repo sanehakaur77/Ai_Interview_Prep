@@ -1,10 +1,9 @@
 const jwt = require("jsonwebtoken");
-
 exports.authMiddleware = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "No token" });
     }
 
@@ -12,9 +11,10 @@ exports.authMiddleware = (req, res, next) => {
 
     const decoded = jwt.verify(token, "saneha123");
 
-    req.user = decoded; // attach user data
+    req.user = decoded;
     next();
   } catch (err) {
+    console.log("JWT ERROR:", err.message);
     return res.status(401).json({ message: "Invalid token" });
   }
 };
