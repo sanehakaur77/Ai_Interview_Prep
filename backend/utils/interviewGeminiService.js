@@ -22,9 +22,9 @@ Use the resume below:
 ${resumeText}
 
 Rules:
-- Ask exactly 15 questions
-- 10 skill-based questions- programming concepts mentioned in resume
-- 5 project-based questions (from resume) 
+- Ask exactly 3 questions
+- 1 skill-based questions- programming concepts mentioned in resume
+- 2 project-based questions (from resume) 
 - Do NOT give answers
 - Keep questions short
 - Return ONLY JSON array

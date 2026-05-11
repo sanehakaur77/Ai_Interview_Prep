@@ -21,7 +21,7 @@ const interviewSchema = new mongoose.Schema(
 
     interviewType: {
       type: String,
-      enum: ["Behavioral", "Technical", "HR"],
+      enum: ["Behavioral", "Technical", "HR Screening"],
       default: "Behavioral",
     },
 

@@ -18,6 +18,7 @@ const Hero = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log(res);
 
         setUsername(res.data.username);
       } catch (error) {

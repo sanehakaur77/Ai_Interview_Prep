@@ -2,13 +2,16 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// 🔐 Generate Token
+// 🔐 Generate Token (ONLY used in login)
 const generateToken = (id) => {
   return jwt.sign({ _id: id }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 };
 
+//
+// ================= SIGNUP (NO TOKEN HERE) =================
+//
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -34,36 +37,38 @@ exports.signup = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
       success: true,
+      message: "Signup successful. Please login to get token.",
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// LOGIN
+//
+// ================= LOGIN (TOKEN GENERATED HERE ONLY) =================
+//
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // check user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // compare password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    const token = generateToken(user._id);
+
     res.status(200).json({
       _id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id),
+      token, // ✅ only here
       success: true,
     });
   } catch (error) {
@@ -71,25 +76,32 @@ exports.login = async (req, res) => {
   }
 };
 
+//
+// ================= PROFILE =================
+//
 exports.getProfile = async (req, res) => {
   try {
-    // 1. Get token from header
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    // 2. Extract token (Bearer <token>)
     const token = authHeader.split(" ")[1];
 
-    // 3. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
-    // 4. Send username
+
+    // ❌ FIX: was decoded.id
+    const user = await User.findById(decoded._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.status(200).json({
       success: true,
       username: user.name,
+      email: user.email,
     });
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });

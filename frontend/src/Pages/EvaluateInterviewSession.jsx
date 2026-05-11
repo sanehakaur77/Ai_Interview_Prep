@@ -14,8 +14,9 @@ export default function EvaluateInterviewSession() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const sessionId = localStorage.getItem("sessionId");
 
-  const url = "http://localhost:8989/session/result/69e9d56a16dd09879c977423";
+  const url = `http://localhost:8989/session/result/${sessionId}`;
 
   useEffect(() => {
     const fetchData = async () => {
