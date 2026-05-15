@@ -5,6 +5,7 @@ import Features from "./Features";
 import WorkingSteps from "./WorkingSteps";
 import Testimonial from "../Components/Testimonial";
 import Footer from "../Components/common/Footer";
+import ContactPage from "../Components/ui/ContactPage";
 
 const Home = () => {
   return (
@@ -12,6 +13,7 @@ const Home = () => {
       <Hero />
       <WorkingSteps />
       <Testimonial />
+      <ContactPage />
       <Features />
       <Footer />
     </>

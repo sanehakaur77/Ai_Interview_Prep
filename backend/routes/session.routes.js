@@ -13,11 +13,7 @@ const {
 
 router.post("/start", authMiddleware, upload.single("resume"), startInterview);
 router.post("/answer/:sessionId", authMiddleware, submitAnswer);
-router.post(
-  "/evaluate/:sessionId",
-  authMiddleware,
-  evaluateInterviewController,
-);
+router.get("/evaluate/:sessionId", authMiddleware, evaluateInterviewController);
 router.get("/questions/:sessionId", getQuestionsBySessionId);
 router.get("/result/:sessionId", getResultBySession);
 

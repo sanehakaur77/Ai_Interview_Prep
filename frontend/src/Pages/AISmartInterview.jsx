@@ -1,46 +1,62 @@
 import { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { Mic, Send } from "lucide-react";
 
 export default function AISmartInterview() {
   const [answer, setAnswer] = useState("");
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const [voices, setVoices] = useState([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [canSpeak, setCanSpeak] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [isAutoSpeak, setIsAutoSpeak] = useState(true);
 
+  // 🎤 Speech to text
+  const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
+
+  // ⏱️ REAL TIMER
+  const [timeLeft, setTimeLeft] = useState(90);
+
   const videoRef = useRef(null);
   const sessionId = localStorage.getItem("sessionId");
 
-  // Load Voices
+  // =============================
+  // LOAD VOICES
+  // =============================
   useEffect(() => {
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+    const loadVoices = () => {
+      setVoices(window.speechSynthesis.getVoices());
+    };
+
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
   }, []);
 
-  // Fetch Questions
+  // =============================
+  // FETCH QUESTIONS
+  // =============================
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const res = await fetch(
           `http://localhost:8989/session/questions/${sessionId}`,
         );
-
         const data = await res.json();
         setQuestions(data.questions || []);
       } catch (err) {
-        console.error("Fetch error:", err);
+        console.log(err);
       }
     };
-
     fetchQuestions();
   }, [sessionId]);
 
-  // Speech Recognition Setup
+  // =============================
+  // SPEECH TO TEXT
+  // =============================
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -48,77 +64,25 @@ export default function AISmartInterview() {
     if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
-
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-
     recognition.onresult = (event) => {
-      let finalTranscript = "";
-
-      for (let i = 0; i < event.results.length; i++) {
-        finalTranscript += event.results[i][0].transcript + " ";
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
       }
-
-      setAnswer(finalTranscript);
+      setAnswer(transcript);
     };
 
     recognitionRef.current = recognition;
   }, []);
 
-  const toggleListening = () => {
-    if (!recognitionRef.current) return;
-
-    if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      setAnswer("");
-      recognitionRef.current.start();
-    }
-  };
-
-  const speakQuestion = (text) => {
-    if (!text || isSpeaking) return;
-
-    window.speechSynthesis.cancel();
-    setIsSpeaking(true);
-
-    const speech = new SpeechSynthesisUtterance(text);
-
-    const femaleVoice =
-      voices.find(
-        (v) =>
-          v.name.toLowerCase().includes("zira") ||
-          v.name.toLowerCase().includes("samantha"),
-      ) || voices[0];
-
-    speech.voice = femaleVoice;
-
-    speech.onstart = () => videoRef.current?.play();
-    speech.onend = () => setIsSpeaking(false);
-
-    window.speechSynthesis.speak(speech);
-  };
-
+  // =============================
+  // REAL TIMER
+  // =============================
   useEffect(() => {
-    if (questions.length > 0 && canSpeak) {
-      speakQuestion(questions[currentIndex]?.question);
-      setCanSpeak(false);
-    }
-  }, [canSpeak, currentIndex, questions]);
-
-  useEffect(() => {
-    if (questions.length > 0) {
-      setCanSpeak(true);
-    }
-  }, [questions]);
-
-  useEffect(() => {
-    if (questions.length === 0) return;
-
     if (timeLeft <= 0) {
       handleNext();
       return;
@@ -129,172 +93,253 @@ export default function AISmartInterview() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, questions]);
+  }, [timeLeft]);
+
+  // =============================
+  // TOGGLE MIC
+  // =============================
+  const toggleListening = () => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
+  // =============================
+  // SPEAK QUESTION
+  // =============================
+  const speakQuestion = (text) => {
+    if (!text || isSpeaking) return;
+
+    setIsSpeaking(true);
+    const speech = new SpeechSynthesisUtterance(text);
+
+    const femaleVoice =
+      voices.find(
+        (v) =>
+          v.name.toLowerCase().includes("zira") ||
+          v.name.toLowerCase().includes("samantha"),
+      ) || voices[0];
+
+    speech.voice = femaleVoice;
+    speech.pitch = 1.4;
+    speech.rate = 1;
+
+    speech.onstart = () => {
+      videoRef.current?.play();
+    };
+
+    speech.onend = () => {
+      setIsSpeaking(false);
+    };
+
+    window.speechSynthesis.speak(speech);
+  };
+
+  // =============================
+  // AUTO SPEAK
+  // =============================
+  useEffect(() => {
+    if (questions.length > 0 && canSpeak && isAutoSpeak) {
+      speakQuestion(questions[currentIndex]?.question);
+      setCanSpeak(false);
+    }
+  }, [canSpeak, currentIndex, isAutoSpeak, questions]);
 
   useEffect(() => {
-    setTimeLeft(120);
-  }, [currentIndex]);
-
-  const handleNext = async () => {
-    setAnswer("");
-
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+    if (questions.length > 0) {
+      setCanSpeak(true);
     }
+  }, [questions]);
+
+  // =============================
+  // SUBMIT ANSWER
+  // =============================
+  const submitAnswerToServer = async () => {
+    try {
+      if (!answer.trim()) return;
+
+      await fetch(`http://localhost:8989/session/answer/${sessionId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          answers: [
+            {
+              questionIndex: currentIndex,
+              answer: answer,
+            },
+          ],
+        }),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // =============================
+  // NEXT
+  // =============================
+  const handleNext = async () => {
+    await submitAnswerToServer();
+    setAnswer("");
 
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setCanSpeak(true);
+      setTimeLeft(90);
     } else {
       alert("Interview Completed 🎉");
+      navigate(`/evaluate-interview/${sessionId}`);
       window.speechSynthesis.cancel();
 
-      setTimeout(() => {
-        window.location.href = "/evaluate-interview";
-      }, 1500);
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          `http://localhost:8989/session/evaluate/${sessionId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
+  const progress = (timeLeft / 90) * 100;
+
   return (
-    <div className="h-screen bg-[#f5f7f9] flex items-center justify-center p-2 font-sans">
-      <div className="w-full max-w-4xl bg-white rounded-[18px] shadow-xl overflow-hidden border border-gray-100 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#eef4f1] flex items-center justify-center p-3 font-sans">
+      <div className="bg-white w-full max-w-5xl h-[540px] rounded-[28px] overflow-hidden shadow-2xl flex">
         {/* LEFT PANEL */}
-        <div className="w-full lg:w-[300px] bg-[#fafafa] border-r border-gray-200 p-3 flex flex-col gap-3">
-          {/* AI VIDEO */}
-          <div className="overflow-hidden rounded-[14px] shadow-sm border border-gray-200">
+        <div className="w-[30%] bg-[#f8fafb] p-4">
+          {/* VIDEO */}
+          <div className="h-[170px] overflow-hidden rounded-2xl shadow-sm">
             <video
               ref={videoRef}
+              className="object-cover w-full h-full"
               muted
               autoPlay
               loop
               playsInline
-              className="w-full h-[180px] object-cover"
               src="female-ai.mp4"
             />
           </div>
 
-          {/* STATUS CARD */}
-          <div className="bg-white rounded-[14px] border border-gray-200 p-3 flex-1 flex flex-col justify-between shadow-sm">
-            <div>
-              <p className="text-xs font-semibold text-[#4f46e5] mb-6 underline underline-offset-2">
-                Interview Status
-              </p>
+          {/* STATUS */}
+          <div className="p-4 mt-4 bg-white shadow-sm rounded-2xl">
+            <h2 className="text-sm font-semibold text-slate-700">
+              Interview Progress
+            </h2>
 
-              {/* TIMER */}
-              <div className="flex justify-center items-center py-4">
-                <div className="relative w-24 h-24">
-                  <svg className="w-24 h-24 rotate-[-90deg]">
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="38"
-                      stroke="#e5e7eb"
-                      strokeWidth="6"
-                      fill="none"
-                    />
-
-                    <circle
-                      cx="48"
-                      cy="48"
-                      r="38"
-                      stroke="#10b981"
-                      strokeWidth="6"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={238}
-                      strokeDashoffset={238 - (timeLeft / 120) * 238}
-                      className="transition-all duration-1000"
-                    />
-                  </svg>
-
-                  <div className="absolute inset-0 flex items-center justify-center text-lg font-bold text-gray-700">
-                    {timeLeft}s
-                  </div>
+            {/* TIMER */}
+            <div className="flex justify-center mt-5">
+              <div className="relative">
+                <svg width="82" height="82" className="-rotate-90">
+                  <circle
+                    cx="41"
+                    cy="41"
+                    r="31"
+                    stroke="#e5e7eb"
+                    strokeWidth="6"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="41"
+                    cy="41"
+                    r="31"
+                    stroke="#10b981"
+                    strokeWidth="6"
+                    fill="transparent"
+                    strokeDasharray="194"
+                    strokeDashoffset={194 - (194 * progress) / 100}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-lg font-bold text-slate-700">
+                    {timeLeft}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* FOOTER STATS */}
-            <div>
-              <div className="border-t border-gray-200 mb-4" />
-
-              <div className="grid grid-cols-2 text-center">
-                <div>
-                  <h2 className="text-lg font-bold text-emerald-600">
-                    {currentIndex + 1}
-                  </h2>
-
-                  <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">
-                    Current
-                  </p>
-                </div>
-
-                <div className="border-l border-gray-200">
-                  <h2 className="text-lg font-bold text-emerald-600">
-                    {questions.length || 5}
-                  </h2>
-
-                  <p className="text-[10px] uppercase tracking-widest text-gray-400 mt-1">
-                    Total
-                  </p>
-                </div>
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              <div className="py-3 text-center bg-emerald-50 rounded-xl">
+                <h1 className="text-2xl font-bold text-emerald-600">
+                  {currentIndex + 1}
+                </h1>
+                <p className="text-[10px] text-slate-500">CURRENT</p>
+              </div>
+              <div className="py-3 text-center bg-emerald-50 rounded-xl">
+                <h1 className="text-2xl font-bold text-emerald-600">
+                  {questions.length}
+                </h1>
+                <p className="text-[10px] text-slate-500">TOTAL</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="flex-1 p-3 md:p-4 bg-white flex flex-col">
-          {/* HEADER */}
-          <div className="mb-4">
-            <h1 className="text-lg font-bold text-emerald-700 mb-4">
+        <div className="flex flex-col flex-1 p-6">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-emerald-700">
               AI Smart Interview
             </h1>
-
-            {/* QUESTION BOX */}
-            <div className="bg-[#f7f8fa] rounded-[18px] p-3 border border-gray-100">
-              <p className="text-[10px] tracking-[3px] font-bold text-emerald-700 uppercase mb-2">
-                Question {currentIndex + 1} Of {questions.length || 5}
+            <div className="px-4 py-2 rounded-full bg-emerald-50">
+              <p className="text-xs font-semibold text-emerald-600">
+                {currentIndex + 1} / {questions.length}
               </p>
-
-              <h2 className="text-base font-semibold text-gray-800 leading-relaxed">
-                {questions[currentIndex]?.question ||
-                  "Preparing your next question..."}
-              </h2>
             </div>
           </div>
 
-          {/* ANSWER BOX */}
-          <div className="flex-1">
-            <textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder="Type your answer..."
-              className="w-full h-full min-h-[220px] resize-none rounded-[14px] border border-gray-200 bg-[#fafafa] p-3 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-            />
+          {/* QUESTION */}
+          <div className="mt-4 p-5 bg-[#f8fafb] rounded-2xl">
+            <p className="text-[10px] uppercase font-bold tracking-[3px] text-emerald-600">
+              Question
+            </p>
+            <h2 className="mt-2 text-[17px] leading-7 font-semibold text-slate-700">
+              {questions[currentIndex]?.question || "Loading..."}
+            </h2>
           </div>
 
-          {/* FOOTER */}
-          <div className="mt-5 flex items-center gap-3">
+          {/* ANSWER */}
+          <textarea
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            placeholder="Speak or type your answer..."
+            className="w-full flex-1 mt-4 bg-[#f8fafb] rounded-2xl p-5 outline-none focus:ring-0 border-none resize-none text-sm text-slate-600"
+          />
+
+          {/* BUTTONS */}
+          <div className="flex gap-3 mt-5">
             <button
               onClick={toggleListening}
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all shadow-md ${
-                isListening
-                  ? "bg-red-500 text-white scale-105"
-                  : "bg-black text-white hover:scale-105"
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition shadow-md ${
+                isListening ? "bg-red-500" : "bg-slate-900"
               }`}
             >
-              <Mic size={18} fill={isListening ? "currentColor" : "none"} />
+              <Mic size={18} className="text-white" />
             </button>
 
             <button
               onClick={handleNext}
-              className="flex-1 h-10 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-lg"
+              className="flex items-center justify-center flex-1 h-12 gap-2 font-semibold text-white transition rounded-full shadow-md bg-emerald-600 hover:bg-emerald-700"
             >
-              {currentIndex === questions.length - 1
-                ? "Finish Interview"
-                : "Submit Answer"}
-
+              Submit
               <Send size={16} />
             </button>
           </div>

@@ -141,7 +141,6 @@ const evaluateInterviewController = async (req, res) => {
   try {
     const { sessionId } = req.params;
 
-    // 1️⃣ find interview questions
     const doc = await InterviewQuestion.findOne({ sessionId });
 
     if (!doc) {
@@ -151,22 +150,31 @@ const evaluateInterviewController = async (req, res) => {
       });
     }
 
-    // 2️⃣ AI evaluation
     const result = await evaluateInterview(doc.questions);
 
-    // 3️⃣ update question feedback + score
+    // update questions
     doc.questions = doc.questions.map((q, i) => ({
       ...q.toObject(),
       feedback: result.feedback[i]?.feedback || "",
       score: result.feedback[i]?.score || 0,
     }));
 
-    doc.overallScore = result.score || 0;
+    // calculate overall manually
+    const totalScore = doc.questions.reduce(
+      (sum, q) => sum + Number(q.score || 0),
+      0,
+    );
+
+    const maxScore = doc.questions.length * 10;
+
+    const overallScore = Math.round((totalScore / maxScore) * 100);
+
+    doc.overallScore = overallScore;
+
     doc.summary = result.summary || "";
 
     await doc.save();
 
-    // 4️⃣ ✅ SAVE IN RESULT MODEL (IMPORTANT PART)
     const savedResult = await Result.create({
       sessionId: doc.sessionId,
       overallScore: doc.overallScore,
@@ -174,14 +182,14 @@ const evaluateInterviewController = async (req, res) => {
       questions: doc.questions,
     });
 
-    // 5️⃣ response
     res.status(200).json({
       success: true,
       message: "Interview evaluated and saved successfully",
       data: savedResult,
     });
   } catch (err) {
-    console.error("ERROR:", err);
+    console.log(err);
+
     res.status(500).json({
       success: false,
       message: err.message,

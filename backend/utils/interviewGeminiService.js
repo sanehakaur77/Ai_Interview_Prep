@@ -76,7 +76,7 @@ const evaluateInterview = async (questions) => {
 You are an expert interviewer.
 
 Strictly return ONLY valid JSON. No markdown.
-
+and score should be between 0 and 10 for each question
 Format:
 {
   "score": number,

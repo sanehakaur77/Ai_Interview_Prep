@@ -27,7 +27,16 @@ const Evaluate = () => {
 
   if (!data) {
     return (
-      <div className="h-screen flex items-center justify-center text-gray-500">
+      <div
+        className="h-screen flex items-center justify-center text-gray-500 
+  
+bg-white 
+dark:bg-[#07140f]
+
+text-slate-800 
+dark:text-white
+"
+      >
         Loading...
       </div>
     );
